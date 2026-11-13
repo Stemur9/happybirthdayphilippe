@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Happy Birthday Philippe! 🎁</title>
+    <!-- Sportliche Speed-Schriftart -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:ital,wght@0,600;0,700;1,700&family=Inter:wght@500;600;700&display=swap" rel="stylesheet">
+    <!-- Konfetti-Bibliothek -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+
+    <style>
+        :root {
+            --card-bg: #ffffff;
+            --success: #15803d;
+            --accent-color: #d94e28;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #3f8f3a;
+            color: #0f172a;
+            margin: 0;
+            padding: 14px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+            position: relative;
+        }
+
+        /* Laufbahn-Hintergrund rein aus CSS (kein Bild nötig) */
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            background:
+                /* Abdunklung für Lesbarkeit */
+                linear-gradient(rgba(15, 23, 42, 0.4), rgba(15, 23, 42, 0.55)),
+                /* Rasen oben + weiße Randlinie */
+                linear-gradient(to bottom, #3f8f3a 0 11%, #ffffff 11% 11.8%, transparent 11.8%),
+                /* Bahnlinien, die auf einen Fluchtpunkt zulaufen */
+                repeating-conic-gradient(from 0deg at 50% -25%, #ffffff 0 0.4deg, transparent 0.4deg 6deg),
+                /* roter Tartan */
+                linear-gradient(#a8402a, #c4533a);
+        }
+
+        header {
+            text-align: center;
+            max-width: 650px;
+            margin-bottom: 14px;
+            z-index: 1;
+        }
+        h1 { 
+            font-family: 'Chakra Petch', sans-serif;
+            font-style: italic;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: #ffffff; 
+            margin: 4px 0 10px 0; 
+            font-size: 2.1rem; 
+            letter-spacing: 1.5px;
+            text-shadow: 3px 3px 0px rgba(0, 0, 0, 0.5);
+        }
+        .intro-box {
+            background: rgba(255, 255, 255, 0.95);
+            border-left: 6px solid var(--accent-color);
+            padding: 12px 16px;
+            border-radius: 8px;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.3);
+            font-size: 0.95em;
+            line-height: 1.45;
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        /* Diashow Container */
+        .slider-container {
+            width: 100%;
+            max-width: 600px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            position: relative;
+            z-index: 1;
+        }
+        .card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 24px 20px;
+            box-shadow: 0 14px 35px rgba(0,0,0,0.4);
+            display: none; 
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            border: 4px solid #ffffff;
+            box-sizing: border-box;
+        }
+        .card.active {
+            display: flex; 
+        }
+        .card.unlocked {
+            border-color: var(--success);
+            background-color: #f0fdf4;
+        }
+        .card.solved {
+            background-color: #e2e8f0;
+            opacity: 0.92;
+            border-color: #64748b;
+        }
+        .snack-img {
+            max-width: 100%;
+            width: 240px;
+            height: 150px;
+            object-fit: contain;
+            margin-bottom: 15px;
+            filter: grayscale(100%) opacity(0.55);
+            transition: all 0.4s ease;
+        }
+        .card.unlocked .snack-img {
+            filter: grayscale(0%) opacity(1);
+            transform: scale(1.06);
+        }
+        .question {
+            font-family: 'Chakra Petch', sans-serif;
+            font-style: italic;
+            font-weight: 700;
+            font-size: 1.3em;
+            margin-bottom: 20px;
+            color: #0f172a;
+            line-height: 1.3;
+        }
+        .input-group {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+        }
+        input {
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+            width: 90%;
+            max-width: 400px;
+            padding: 12px;
+            border: 2px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 16px;
+            text-align: center;
+            box-sizing: border-box;
+        }
+        input:focus {
+            outline: none;
+            border-color: var(--accent-color);
+        }
+        button {
+            font-family: 'Chakra Petch', sans-serif;
+            font-style: italic;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 12px 28px;
+            border-radius: 8px;
+            font-size: 17px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(217, 78, 40, 0.4);
+            transition: transform 0.15s, background 0.2s;
+        }
+        button:hover { 
+            background-color: #b83717; 
+            transform: translateY(-1px);
+        }
+        
+        .secondary-btn {
+            background-color: #334155;
+            margin-top: 10px;
+            font-size: 14px;
+            padding: 8px 18px;
+            box-shadow: none;
+        }
+        .secondary-btn:hover { background-color: #1e293b; }
+
+        .restart-btn {
+            background-color: #0284c7;
+            margin-top: 12px;
+            font-size: 15px;
+        }
+        .restart-btn:hover { background-color: #0369a1; }
+
+        .status {
+            margin-top: 15px;
+            width: 100%;
+        }
+        .error { 
+            font-family: 'Chakra Petch', sans-serif;
+            font-style: italic;
+            color: #dc2626; 
+            font-weight: 700;
+            font-size: 1.05em;
+        }
+        
+        .success-box {
+            background: #dcfce7;
+            border-radius: 10px;
+            padding: 15px;
+            color: #14532d;
+            margin-top: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .bon-appetit {
+            font-family: 'Chakra Petch', sans-serif;
+            font-style: italic;
+            font-size: 1.4em;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        .solutions-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 100%;
+            max-height: 230px;
+            overflow-y: auto;
+            align-items: center;
+        }
+        .solution-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: white;
+            padding: 8px 14px;
+            border-radius: 8px;
+            width: 90%;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+            font-size: 0.95em;
+            text-align: left;
+            font-weight: 600;
+        }
+        
+        /* Extra große Flaggen, absolut schnittfrei (perfekt für Nepal) */
+        .flag-img {
+            width: 95px;
+            height: 65px;
+            object-fit: contain;
+            background: #f8fafc;
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            padding: 3px;
+            flex-shrink: 0;
+        }
+        .flag-img.no-border { 
+            border: none; 
+            background: transparent;
+            padding: 0;
+            width: 70px;
+            height: 70px;
+        }
+
+        /* Diashow Navigations-Leiste unten */
+        .nav-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            max-width: 600px;
+            margin-top: 16px;
+            padding: 0 8px;
+            box-sizing: border-box;
+            z-index: 1;
+        }
+        .nav-btn {
+            font-family: 'Chakra Petch', sans-serif;
+            font-style: italic;
+            font-weight: 700;
+            text-transform: uppercase;
+            background-color: #ffffff;
+            color: #0f172a;
+            border: 2px solid #0f172a;
+            padding: 9px 18px;
+            border-radius: 8px;
+            font-size: 15px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+        }
+        .nav-btn:hover { background-color: #f1f5f9; }
+        .counter-indicator {
+            font-family: 'Chakra Petch', sans-serif;
+            font-style: italic;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: #ffffff;
+            font-size: 1.15rem;
+            background: rgba(15, 23, 42, 0.75);
+            padding: 6px 14px;
+            border-radius: 8px;
+            letter-spacing: 0.5px;
+        }
+
+        /* Vollbild-Overlay für Sprüche */
+        #popup-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.85);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 999;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+        }
+        #popup-overlay.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        #popup-text {
+            font-family: 'Chakra Petch', sans-serif;
+            font-style: italic;
+            font-weight: 700;
+            text-transform: none;
+            color: #ffffff;
+            font-size: 3.1rem;
+            text-align: center;
+            padding: 20px;
+            text-shadow: 4px 4px 0px var(--accent-color);
+            transform: scale(0.5);
+            animation: popIn 0.25s forwards;
+        }
+        #popup-overlay.success-popup #popup-text {
+            text-shadow: 4px 4px 0px var(--success);
+        }
+        @keyframes popIn {
+            to { transform: scale(1); }
+        }
+
+        @media (max-width: 500px) {
+            h1 { font-size: 1.55rem; }
+            #popup-text { font-size: 2.1rem; }
+            .card { padding: 18px 12px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Audio Elemente -->
+    <audio id="sound-wow" src="https://cdn.jsdelivr.net/gh/our-audio-cdn/lib@main/anime-wow.mp3" preload="auto" onerror="this.src='https://www.myinstants.com/media/sounds/anime-wow-sound-effect.mp3'"></audio>
+    <audio id="sound-boom" src="https://cdn.jsdelivr.net/gh/our-audio-cdn/lib@main/vine-boom.mp3" preload="auto" onerror="this.src='https://www.myinstants.com/media/sounds/vine-boom.mp3'"></audio>
+
+    <!-- Vollbild-Pop-up -->
+    <div id="popup-overlay">
+        <div id="popup-text"></div>
+    </div>
+
+    <header>
+        <h1>Happy Birthday Philippe! 🎁</h1>
+        <div class="intro-box">
+            Jeder Snack ist mit einer Frage verknüpft. Errate es richtig und du darfst es essen. Bis du es nicht richtig löst, darfst du nicht essen!<br>
+            <strong>Ton an 🔊</strong>
+        </div>
+    </header>
+
+    <!-- Diashow Hauptbereich -->
+    <div class="slider-container" id="quiz-container"></div>
+
+    <!-- Diashow Steuerung unten -->
+    <div class="nav-bar">
+        <button class="nav-btn" onclick="prevSlide()">◀ Zurück</button>
+        <div class="counter-indicator" id="slide-counter">Bahn 1 / 6</div>
+        <button class="nav-btn" onclick="nextSlide()">Weiter ▶</button>
+    </div>
+
+    <script>
+        const quizData = [
+            {
+                image: "riegel1.png",
+                question: "Welches Land hat keine rechteckige Fahne?",
+                solutions: [
+                    { names: ["nepal"], label: "Nepal (zwei Dreiecke)", code: "np", noBorder: true },
+                    { names: ["schweiz", "switzerland"], label: "Schweiz (quadratisch)", code: "ch" },
+                    { names: ["vatikan", "vatikanstadt"], label: "Vatikanstadt (quadratisch)", code: "va" }
+                ]
+            },
+            {
+                image: "riegel2.png",
+                question: "Welches afrikanische Land hat den gleichen Anfangsbuchstaben wie seine Hauptstadt?",
+                solutions: [
+                    { names: ["dschibuti", "djibouti"], label: "Dschibuti (Hauptstadt: Dschibuti)", code: "dj" },
+                    { names: ["algerien", "algeria"], label: "Algerien (Hauptstadt: Algier)", code: "dz" },
+                    { names: ["mosambik", "mozambique"], label: "Mosambik (Hauptstadt: Maputo)", code: "mz" },
+                    { names: ["niger"], label: "Niger (Hauptstadt: Niamey)", code: "ne" },
+                    { names: ["sao tome und principe", "são tomé und príncipe", "sao tome"], label: "São Tomé und Príncipe (Hauptstadt: São Tomé)", code: "st" },
+                    { names: ["tunesien", "tunisia"], label: "Tunesien (Hauptstadt: Tunis)", code: "tn" }
+                ]
+            },
+            {
+                image: "riegel3.png",
+                question: "Welches südamerikanische Land grenzt an mindestens 5 Länder?",
+                solutions: [
+                    { names: ["brasilien", "brazil"], label: "Brasilien (10 Nachbarländer)", code: "br" },
+                    { names: ["argentinien", "argentina"], label: "Argentinien (5 Nachbarländer)", code: "ar" },
+                    { names: ["bolivien", "bolivia"], label: "Bolivien (5 Nachbarländer)", code: "bo" },
+                    { names: ["kolumbien", "colombia"], label: "Kolumbien (5 Nachbarländer)", code: "co" },
+                    { names: ["peru"], label: "Peru (5 Nachbarländer)", code: "pe" }
+                ]
+            },
+            {
+                image: "riegel4.png",
+                question: "Nenne ein Land in Europa, das einen Stern in der Flagge hat!",
+                solutions: [
+                    { names: ["bosnien und herzegowina", "bosnien"], label: "Bosnien und Herzegowina", code: "ba" },
+                    { names: ["kosovo"], label: "Kosovo", code: "xk" },
+                    { names: ["türkei", "tuerkei", "turkey"], label: "Türkei", code: "tr" },
+                    { names: ["moldau", "moldawien", "moldova"], label: "Moldau", code: "md" },
+                    { names: ["slowenien", "slovenia"], label: "Slowenien", code: "si" },
+                    { names: ["aserbaidschan", "azerbaijan"], label: "Aserbaidschan", code: "az" },
+                    { names: ["europa", "eu", "europäische union", "europa flagge"], label: "Europäische Union", code: "eu" }
+                ]
+            },
+            {
+                image: "riegel5.png",
+                question: "Welches Land startet mit dem Buchstaben „K“ und liegt in Asien?",
+                solutions: [
+                    { names: ["kambodscha", "cambodia"], label: "Kambodscha", code: "kh" },
+                    { names: ["kasachstan", "kazakhstan"], label: "Kasachstan", code: "kz" },
+                    { names: ["katar", "qatar"], label: "Katar", code: "qa" },
+                    { names: ["kirgistan", "kirgisistan", "kyrgyzstan"], label: "Kirgisistan", code: "kg" },
+                    { names: ["kuwait"], label: "Kuwait", code: "kw" },
+                    { names: ["korea", "südkorea", "nordkorea"], label: "Südkorea", code: "kr" }
+                ]
+            },
+            {
+                image: "riegel6.png",
+                question: "Nenne einen Binnenstaat, der Grün in der Flagge hat!",
+                solutions: [
+                    { names: ["äthiopien", "aethiopien"], label: "Äthiopien", code: "et" },
+                    { names: ["burkina faso"], label: "Burkina Faso", code: "bf" },
+                    { names: ["burundi"], label: "Burundi", code: "bi" },
+                    { names: ["eswatini", "swasiland"], label: "Eswatini (Swasiland)", code: "sz" },
+                    { names: ["lesotho"], label: "Lesotho", code: "ls" },
+                    { names: ["malawi"], label: "Malawi", code: "mw" },
+                    { names: ["mali"], label: "Mali", code: "ml" },
+                    { names: ["niger"], label: "Niger", code: "ne" },
+                    { names: ["ruanda", "rwanda"], label: "Ruanda", code: "rw" },
+                    { names: ["sambia", "zambia"], label: "Sambia", code: "zm" },
+                    { names: ["simbabwe", "zimbabwe"], label: "Simbabwe", code: "zw" },
+                    { names: ["zentralafrikanische republik", "zar"], label: "Zentralafrikanische Republik", code: "cf" },
+                    { names: ["afghanistan"], label: "Afghanistan", code: "af" },
+                    { names: ["aserbaidschan", "azerbaijan"], label: "Aserbaidschan", code: "az" },
+                    { names: ["tadschikistan", "tajikistan"], label: "Tadschikistan", code: "tj" },
+                    { names: ["turkmenistan"], label: "Turkmenistan", code: "tm" },
+                    { names: ["usbekistan", "uzbekistan"], label: "Usbekistan", code: "uz" },
+                    { names: ["belarus", "weißrussland", "weissrussland"], label: "Belarus", code: "by" },
+                    { names: ["ungarn", "hungary"], label: "Ungarn", code: "hu" },
+                    { names: ["bolivien", "bolivia"], label: "Bolivien", code: "bo" }
+                ]
+            }
+        ];
+
+        let currentSlide = 0;
+        let wrongAttempts = {};
+
+        const container = document.getElementById("quiz-container");
+        const counterEl = document.getElementById("slide-counter");
+
+        function toTitleCase(str) {
+            return str.replace(/\S+/g, word => word.charAt(0).toUpperCase() + word.slice(1));
+        }
+
+        function renderQuiz() {
+            container.innerHTML = "";
+            quizData.forEach((item, index) => {
+                if (wrongAttempts[index] === undefined) wrongAttempts[index] = 0;
+
+                const card = document.createElement("div");
+                card.className = `card ${index === currentSlide ? "active" : ""}`;
+                card.id = `card-${index}`;
+
+                card.innerHTML = `
+                    <img src="${item.image}" alt="Snack" class="snack-img" id="img-${index}">
+                    <p class="question">${item.question}</p>
+                    <div class="input-group" id="input-group-${index}">
+                        <input type="text" id="input-${index}" placeholder="Land eingeben..." onkeypress="if(event.key==='Enter') checkAnswer(${index})">
+                        <button id="btn-${index}" onclick="checkAnswer(${index})">Freischalten 🔓</button>
+                    </div>
+                    <div id="solution-area-${index}"></div>
+                    <div class="status" id="status-${index}"></div>
+                `;
+                container.appendChild(card);
+            });
+            counterEl.innerText = `Bahn ${currentSlide + 1} / ${quizData.length}`;
+        }
+
+        renderQuiz();
+
+        function showSlide(index) {
+            if (index < 0) index = quizData.length - 1;
+            if (index >= quizData.length) index = 0;
+            currentSlide = index;
+
+            document.querySelectorAll(".card").forEach((card, idx) => {
+                if (idx === currentSlide) {
+                    card.classList.add("active");
+                } else {
+                    card.classList.remove("active");
+                }
+            });
+            counterEl.innerText = `Bahn ${currentSlide + 1} / ${quizData.length}`;
+        }
+
+        function nextSlide() { showSlide(currentSlide + 1); }
+        function prevSlide() { showSlide(currentSlide - 1); }
+
+        function showPopup(text, isSuccess = false) {
+            const overlay = document.getElementById("popup-overlay");
+            const popupText = document.getElementById("popup-text");
+            
+            popupText.innerText = toTitleCase(text);
+            
+            if (isSuccess) {
+                overlay.classList.add("success-popup");
+                if (typeof confetti === "function") {
+                    confetti({
+                        particleCount: 90,
+                        spread: 80,
+                        origin: { y: 0.6 },
+                        zIndex: 1000
+                    });
+                }
+            } else {
+                overlay.classList.remove("success-popup");
+            }
+
+            overlay.classList.add("show");
+
+            setTimeout(() => {
+                overlay.classList.remove("show");
+            }, 2000);
+        }
+
+        function checkAnswer(index) {
+            const inputEl = document.getElementById(`input-${index}`);
+            const statusEl = document.getElementById(`status-${index}`);
+            const cardEl = document.getElementById(`card-${index}`);
+            const inputGroup = document.getElementById(`input-group-${index}`);
+            const solutionArea = document.getElementById(`solution-area-${index}`);
+
+            const userGuess = inputEl.value.trim().toLowerCase();
+            const matchedSolution = quizData[index].solutions.find(sol => 
+                sol.names.includes(userGuess)
+            );
+
+            if (matchedSolution) {
+                const soundWow = document.getElementById("sound-wow");
+                soundWow.currentTime = 0;
+                soundWow.play().catch(e => console.log("Audio play blocked"));
+
+                const successPhrases = ["Gut Gemacht", "Richtig", "Sehr Stark!"];
+                const chosenSuccess = successPhrases[Math.floor(Math.random() * successPhrases.length)];
+                showPopup(chosenSuccess, true);
+
+                cardEl.classList.add("unlocked");
+                cardEl.classList.add("solved");
+                
+                const borderClass = matchedSolution.noBorder ? "flag-img no-border" : "flag-img";
+                statusEl.innerHTML = `
+                    <div class="success-box">
+                        <span class="bon-appetit">Bon Appétit! 🍫</span>
+                        <div class="solution-item" style="justify-content: center; background: #dcfce7;">
+                            <img src="https://flagcdn.com/w320/${matchedSolution.code}.png" alt="${matchedSolution.label}" class="${borderClass}">
+                            <strong>${matchedSolution.label}</strong>
+                        </div>
+                        <button class="restart-btn" onclick="resetCard(${index})">Nochmal Spielen 🔄</button>
+                    </div>
+                `;
+                inputGroup.style.display = "none";
+                solutionArea.innerHTML = "";
+            } else {
+                const soundBoom = document.getElementById("sound-boom");
+                soundBoom.currentTime = 0;
+                soundBoom.play().catch(e => console.log("Audio play blocked"));
+
+                wrongAttempts[index]++;
+                
+                const basePhrases = ["Uff Schlecht", "Streng Dich An", "Das War Falsch Philippe", "Bemühe Dich Mal", "Falsch"];
+                let chosenPhrase = "";
+
+                if (wrongAttempts[index] >= 2) {
+                    const allPhrases = [...basePhrases, "Schon Wieder Falsch"];
+                    chosenPhrase = allPhrases[Math.floor(Math.random() * allPhrases.length)];
+                } else {
+                    chosenPhrase = basePhrases[Math.floor(Math.random() * basePhrases.length)];
+                }
+
+                showPopup(chosenPhrase, false);
+                statusEl.innerHTML = "<span class='error'>❌ Leider Falsch!</span>";
+
+                inputEl.value = "";
+                inputEl.focus();
+
+                if (wrongAttempts[index] >= 3) {
+                    solutionArea.innerHTML = `<button class="secondary-btn" onclick="revealAllSolutions(${index})">Lösung Anzeigen?</button>`;
+                }
+            }
+        }
+
+        function revealAllSolutions(index) {
+            const solutionArea = document.getElementById(`solution-area-${index}`);
+            const inputGroup = document.getElementById(`input-group-${index}`);
+            const cardEl = document.getElementById(`card-${index}`);
+            const statusEl = document.getElementById(`status-${index}`);
+
+            cardEl.classList.add("solved");
+            
+            let solutionsHtml = `<div class="solutions-list">`;
+            quizData[index].solutions.forEach(sol => {
+                const borderClass = sol.noBorder ? "flag-img no-border" : "flag-img";
+                solutionsHtml += `
+                    <div class="solution-item">
+                        <img src="https://flagcdn.com/w320/${sol.code}.png" alt="${sol.label}" class="${borderClass}">
+                        <span>${sol.label}</span>
+                    </div>
+                `;
+            });
+            solutionsHtml += `</div>`;
+
+            statusEl.innerHTML = `
+                <div class="success-box" style="background: #fef3c7; color: #92400e;">
+                    <span style="font-family: 'Chakra Petch', sans-serif; font-style: italic; font-weight: 700;">💡 Alle Möglichen Lösungen:</span>
+                    ${solutionsHtml}
+                    <button class="restart-btn" onclick="resetCard(${index})">Nochmal Spielen 🔄</button>
+                </div>
+            `;
+            inputGroup.style.display = "none";
+            solutionArea.innerHTML = "";
+        }
+
+        function resetCard(index) {
+            wrongAttempts[index] = 0;
+            renderQuiz();
+            showSlide(index);
+        }
+    </script>
+
+</body>
+</html>
